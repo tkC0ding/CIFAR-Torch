@@ -55,3 +55,24 @@ class CNN(nn.Module):
 
         nn.ModuleList([self.conv1, self.r1, self.pool1, self.conv2, self.r2, self.pool2, self.conv3, self.r3, self.pool3,
                        self.flatten, self.fc1, self.r4, self.fc2, self.r5, self.fc3])
+    
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.r1(x)
+        x = self.pool1(x)
+
+        x = self.conv2(x)
+        x = self.r2(x)
+        x = self.pool2(x)
+
+        x = self.conv3(x)
+        x = self.r3(x)
+        x = self.pool3(x)
+
+        x = self.flatten(x)
+        x = self.fc1(x)
+        x = self.r4(x)
+        x = self.fc2(x)
+        x = self.r5(x)
+        x = self.fc3(x)
+        return(x)
