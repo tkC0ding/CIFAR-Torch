@@ -76,3 +76,7 @@ class CNN(nn.Module):
         x = self.r5(x)
         x = self.fc3(x)
         return(x)
+
+model = CNN().to(device)
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
