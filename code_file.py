@@ -30,3 +30,28 @@ device = torch.device(
     if torch.backends.mps.is_available()
     else "cpu"
 )
+
+class CNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(3, 6, 3)
+        self.r1 = nn.ReLU()
+        self.pool1 = nn.MaxPool2d(2, 2)
+
+        self.conv2 = nn.Conv2d(6, 16, 4)
+        self.r2 = nn.ReLU()
+        self.pool2 = nn.MaxPool2d(2, 2)
+
+        self.conv3 = nn.Conv2d(16, 32, 3)
+        self.r3 = nn.ReLU()
+        self.pool3 = nn.MaxPool2d(2, 2)
+
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(128, 64)
+        self.r4 = nn.ReLU()
+        self.fc2 = nn.Linear(64, 16)
+        self.r5 = nn.ReLU()
+        self.fc3 = nn.Linear(16, 10)
+
+        nn.ModuleList([self.conv1, self.r1, self.pool1, self.conv2, self.r2, self.pool2, self.conv3, self.r3, self.pool3,
+                       self.flatten, self.fc1, self.r4, self.fc2, self.r5, self.fc3])
