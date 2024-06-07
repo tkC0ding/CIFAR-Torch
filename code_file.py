@@ -81,7 +81,7 @@ model = CNN().to(device)
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-def train(model, loss_fn, optimizer, epochs, dataloader):
+def train(model, loss_fn, optimizer, dataloader):
     acc = 0
     train_loss = 0
     model.train()
@@ -116,3 +116,11 @@ def validate(model, loss_fn, dataloader):
         avg_acc = acc/len(dataloader)
         avg_loss = val_loss/len(dataloader)
         return((avg_acc, avg_loss))
+
+num_epochs = 10
+for epoch in range(num_epochs):
+    train_acc, train_loss = train(model, loss_fn, optimizer, train_loader)
+    val_acc, val_loss = validate(model, loss_fn, test_loader)
+    print(f"Epoch : {epoch+1} acc : {train_acc} loss : {train_loss} val_acc : {val_acc} val_loss : {val_loss}")
+
+print("Model done training!")
