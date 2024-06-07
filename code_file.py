@@ -84,6 +84,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 def train(model, loss_fn, optimizer, epochs, dataloader):
     acc = 0
     train_loss = 0
+    model.train()
     for X, y in dataloader:
         X, y = X.to(device), y.to(device)
 
@@ -98,3 +99,20 @@ def train(model, loss_fn, optimizer, epochs, dataloader):
     avg_loss = train_loss/len(dataloader)
     avg_acc = acc/len(dataloader)
     return((avg_acc, avg_loss))
+
+def validate(model, loss_fn, dataloader):
+    acc = 0
+    val_loss = 0
+    model.eval()
+    with torch.no_grad():
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+
+            pred = model(X)
+            loss = loss_fn(pred, y)
+            acc += (pred.argmax(1) == y).sum().item()/len(y)
+            val_loss += loss.item()
+        
+        avg_acc = acc/len(dataloader)
+        avg_loss = val_loss/len(dataloader)
+        return((avg_acc, avg_loss))
