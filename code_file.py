@@ -80,3 +80,21 @@ class CNN(nn.Module):
 model = CNN().to(device)
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+def train(model, loss_fn, optimizer, epochs, dataloader):
+    acc = 0
+    train_loss = 0
+    for X, y in dataloader:
+        X, y = X.to(device), y.to(device)
+
+        y_pred = model(X)
+        loss = loss_fn(y_pred, y)
+        train_loss += loss.item()
+        acc += (y_pred.argmax(1) == y).sum().item()/len(y)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    avg_loss = train_loss/len(dataloader)
+    avg_acc = acc/len(dataloader)
+    return((avg_acc, avg_loss))
