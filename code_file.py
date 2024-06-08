@@ -124,3 +124,5 @@ for epoch in range(num_epochs):
     print(f"Epoch : {epoch+1} acc : {train_acc} loss : {train_loss} val_acc : {val_acc} val_loss : {val_loss}")
 
 print("Model done training!")
+
+torch.save(model.state_dict(), 'SavedModel/model.pth')
