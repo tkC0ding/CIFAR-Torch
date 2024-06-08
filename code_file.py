@@ -132,7 +132,7 @@ def validate(model, loss_fn, dataloader):
         avg_loss = val_loss/len(dataloader)
         return((avg_acc, avg_loss))
 
-num_epochs = 100
+num_epochs = 65
 for epoch in range(num_epochs):
     train_acc, train_loss = train(model, loss_fn, optimizer, train_loader)
     val_acc, val_loss = validate(model, loss_fn, test_loader)
