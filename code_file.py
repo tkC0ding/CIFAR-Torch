@@ -36,44 +36,59 @@ class CNN(nn.Module):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 6, 3)
         self.r1 = nn.ReLU()
+        self.dr1 = nn.Dropout(0.5)
         self.pool1 = nn.MaxPool2d(2, 2)
+        self.bn1 = nn.BatchNorm2d(6)
 
         self.conv2 = nn.Conv2d(6, 16, 4)
         self.r2 = nn.ReLU()
         self.pool2 = nn.MaxPool2d(2, 2)
+        self.bn2 = nn.BatchNorm2d(16)
 
         self.conv3 = nn.Conv2d(16, 32, 3)
         self.r3 = nn.ReLU()
         self.pool3 = nn.MaxPool2d(2, 2)
+        self.bn3 = nn.BatchNorm2d(32)
 
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(128, 64)
         self.r4 = nn.ReLU()
+        self.bn4 = nn.BatchNorm1d(64)
+        self.dr2 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(64, 16)
         self.r5 = nn.ReLU()
+        self.bn5 = nn.BatchNorm1d(16)
         self.fc3 = nn.Linear(16, 10)
 
         nn.ModuleList([self.conv1, self.r1, self.pool1, self.conv2, self.r2, self.pool2, self.conv3, self.r3, self.pool3,
-                       self.flatten, self.fc1, self.r4, self.fc2, self.r5, self.fc3])
+                       self.flatten, self.fc1, self.r4, self.fc2, self.r5, self.fc3, self.dr1, self.dr2, self.bn1, self.bn2,
+                       self.bn3, self.bn4, self.bn5])
     
     def forward(self, x):
         x = self.conv1(x)
         x = self.r1(x)
+        x = self.dr1(x)
         x = self.pool1(x)
+        x = self.bn1(x)
 
         x = self.conv2(x)
         x = self.r2(x)
         x = self.pool2(x)
+        x = self.bn2(x)
 
         x = self.conv3(x)
         x = self.r3(x)
         x = self.pool3(x)
+        x = self.bn3(x)
 
         x = self.flatten(x)
         x = self.fc1(x)
         x = self.r4(x)
+        x = self.bn4(x)
+        x = self.dr2(x)
         x = self.fc2(x)
         x = self.r5(x)
+        x = self.bn5(x)
         x = self.fc3(x)
         return(x)
 
@@ -117,7 +132,7 @@ def validate(model, loss_fn, dataloader):
         avg_loss = val_loss/len(dataloader)
         return((avg_acc, avg_loss))
 
-num_epochs = 10
+num_epochs = 100
 for epoch in range(num_epochs):
     train_acc, train_loss = train(model, loss_fn, optimizer, train_loader)
     val_acc, val_loss = validate(model, loss_fn, test_loader)
