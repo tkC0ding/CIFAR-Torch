@@ -1,29 +1,12 @@
 import torch
 from torch import nn
-from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor
 from torchvision import datasets
+import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
+import numpy as np
+import matplotlib.pyplot as plt
 
-training_data = datasets.CIFAR10(
-    root = "Data",
-    train = True,
-    download = True,
-    transform = ToTensor()
-)
-
-testing_data = datasets.CIFAR10(
-    root = "Data",
-    train = False,
-    download = True,
-    transform = ToTensor()
-)
-
-batch_size = 64
-
-train_loader = DataLoader(dataset = training_data, batch_size = batch_size, shuffle=True)
-test_loader = DataLoader(dataset = testing_data, batch_size = batch_size, shuffle=False)
-
-device = torch.device(
+device = (
     "cuda"
     if torch.cuda.is_available()
     else "mps"
@@ -31,113 +14,100 @@ device = torch.device(
     else "cpu"
 )
 
+num_epochs = 11
+batch_size = 10
+learning_rate = 0.005
+
+transform_train = transforms.Compose([transforms.ToTensor(),
+                                      transforms.RandomHorizontalFlip(), transforms.RandomCrop(32),
+                                      transforms.Grayscale(),
+                                      transforms.Normalize(0.5, 0.5)])
+
+transform_test = transforms.Compose([transforms.ToTensor(),
+                                     transforms.Grayscale(),
+                                     transforms.Normalize(0.5, 0.5)])
+
+train_dataset = datasets.CIFAR10(
+    root = 'Data',
+    train = True,
+    download = True,
+    transform=transform_train
+)
+
+test_dataset = datasets.CIFAR10(
+    root = 'Data',
+    train = False,
+    download = True,
+    transform=transform_test
+)
+
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
 class CNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 6, 3)
-        self.r1 = nn.ReLU()
-        self.dr1 = nn.Dropout(0.5)
-        self.pool1 = nn.MaxPool2d(2, 2)
-        self.bn1 = nn.BatchNorm2d(6)
-
-        self.conv2 = nn.Conv2d(6, 16, 4)
-        self.r2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(2, 2)
-        self.bn2 = nn.BatchNorm2d(16)
-
-        self.conv3 = nn.Conv2d(16, 32, 3)
-        self.r3 = nn.ReLU()
-        self.pool3 = nn.MaxPool2d(2, 2)
-        self.bn3 = nn.BatchNorm2d(32)
-
+        self.r = nn.ReLU()
+        self.pool = nn.AvgPool2d(2,2)
+        self.conv1 = nn.Conv2d(1, 6, 5)
+        self.conv2 = nn.Conv2d(6, 16, 5)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(128, 64)
-        self.r4 = nn.ReLU()
-        self.bn4 = nn.BatchNorm1d(64)
-        self.dr2 = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(64, 16)
-        self.r5 = nn.ReLU()
-        self.bn5 = nn.BatchNorm1d(16)
-        self.fc3 = nn.Linear(16, 10)
-
-        nn.ModuleList([self.conv1, self.r1, self.pool1, self.conv2, self.r2, self.pool2, self.conv3, self.r3, self.pool3,
-                       self.flatten, self.fc1, self.r4, self.fc2, self.r5, self.fc3, self.dr1, self.dr2, self.bn1, self.bn2,
-                       self.bn3, self.bn4, self.bn5])
+        self.fc1 = nn.Linear(400, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
     
     def forward(self, x):
         x = self.conv1(x)
-        x = self.r1(x)
-        x = self.dr1(x)
-        x = self.pool1(x)
-        x = self.bn1(x)
+        x = self.r(x)
+        x = self.pool(x)
 
         x = self.conv2(x)
-        x = self.r2(x)
-        x = self.pool2(x)
-        x = self.bn2(x)
-
-        x = self.conv3(x)
-        x = self.r3(x)
-        x = self.pool3(x)
-        x = self.bn3(x)
+        x = self.r(x)
+        x = self.pool(x)
 
         x = self.flatten(x)
         x = self.fc1(x)
-        x = self.r4(x)
-        x = self.bn4(x)
-        x = self.dr2(x)
+        x = self.r(x)
         x = self.fc2(x)
-        x = self.r5(x)
-        x = self.bn5(x)
+        x = self.r(x)
         x = self.fc3(x)
         return(x)
 
 model = CNN().to(device)
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-def train(model, loss_fn, optimizer, dataloader):
-    acc = 0
-    train_loss = 0
-    model.train()
-    for X, y in dataloader:
+num_steps = len(train_loader)
+
+for epoch in range(num_epochs):
+    for i, (X, y) in enumerate(train_loader):
         X, y = X.to(device), y.to(device)
 
         y_pred = model(X)
         loss = loss_fn(y_pred, y)
-        train_loss += loss.item()
-        acc += (y_pred.argmax(1) == y).sum().item()/len(y)
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-    avg_loss = train_loss/len(dataloader)
-    avg_acc = acc/len(dataloader)
-    return((avg_acc, avg_loss))
 
-def validate(model, loss_fn, dataloader):
-    acc = 0
-    val_loss = 0
-    model.eval()
-    with torch.no_grad():
-        for X, y in dataloader:
-            X, y = X.to(device), y.to(device)
+        if (i + 1) % 2000 == 0:
+            print(f"Epoch : [ {epoch+1}/{num_epochs} ], Step [ {i+1}/{num_steps} ], Loss: {loss.item}")
 
-            pred = model(X)
-            loss = loss_fn(pred, y)
-            acc += (pred.argmax(1) == y).sum().item()/len(y)
-            val_loss += loss.item()
+print('Finished Training!')
+
+with torch.no_grad():
+    n_correct = 0
+    n_samples = 0
+    n_class_correct = [0 for i in range(10)]
+    n_class_samples = [0 for i in range(10)]
+    for X,y in test_loader:
+        X, y = X.to(device), y.to(device)
         
-        avg_acc = acc/len(dataloader)
-        avg_loss = val_loss/len(dataloader)
-        return((avg_acc, avg_loss))
+        pred = model(X)
+        score, prediction = torch.max(pred, 1)
+        n_samples += y.size(0)
+        n_correct += (prediction == y).sum().item()
 
-num_epochs = 65
-for epoch in range(num_epochs):
-    train_acc, train_loss = train(model, loss_fn, optimizer, train_loader)
-    val_acc, val_loss = validate(model, loss_fn, test_loader)
-    print(f"Epoch : {epoch+1} acc : {train_acc} loss : {train_loss} val_acc : {val_acc} val_loss : {val_loss}")
-
-print("Model done training!")
-
-torch.save(model.state_dict(), 'SavedModel/model.pth')
+        
