@@ -6,7 +6,8 @@ import torchvision.transforms as transforms
 
 batch_size = 64
 learning_rate = 0.001
-num_epochs = 5
+momentum = 0.9
+num_epochs = 15
 
 # Choose device
 device = torch.device(
@@ -98,6 +99,10 @@ class CNN:
         x = self.relu(x)
         out = self.Dense3(x)
         return(out)
+
+model = CNN().to(device)
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
 
 # train function
 def train(model, loss_fn, optimizer, dataloader):
