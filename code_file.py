@@ -65,7 +65,39 @@ class CNN:
 
         nn.ModuleList([self.relu, self.conv1, self.conv2, self.conv3, self.conv4, self.conv5, self.conv6, self.Dense1, self.Dense2,
                        self.Dense3, self.dropout, self.flatten, self.pool])
+    
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.pool(x)
 
+        x = self.conv3(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.conv4(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.pool(x)
+
+        x = self.conv5(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.conv6(x)
+        x = self.relu(x)
+        x = self.dropout(x)
+        x = self.pool(x)
+
+        x = self.flatten(x)
+        x = self.Dense1(x)
+        x = self.relu(x)
+        x = self.Dense2(x)
+        x = self.relu(x)
+        out = self.Dense3(x)
+        return(out)
 
 # train function
 def train(model, loss_fn, optimizer, dataloader):
@@ -82,7 +114,7 @@ def train(model, loss_fn, optimizer, dataloader):
             loss.backward()
             optimizer.step()
 
-            if (i + 1) % 782 == 0:
+            if (i + 1) % 200 == 0:
                 print(f"Epoch [ {epoch+1}/{num_epochs} ] Step [ {i+1}/{num_steps} ] Loss: {loss.item()}")
     print("Training Finished!")
 
@@ -90,6 +122,7 @@ def train(model, loss_fn, optimizer, dataloader):
 # validation function
 def validate(model, dataloader):
     with torch.no_grad():
+        model.eval()
         n_correct = 0
         n_samples = 0
         for X,y in dataloader:
