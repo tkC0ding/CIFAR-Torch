@@ -16,19 +16,30 @@ device = torch.device(
     else "cpu"
 )
 
+#Data Transforms
+train_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+])
+
+test_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+])
+
 # Downloading datasets
 train_dataset = datasets.CIFAR10(
     root='Data',
     train = True,
     download = True,
-    transform = transforms.ToTensor()
+    transform = train_transform
 )
 
 test_dataset = datasets.CIFAR10(
     root='Data',
     train = False,
     download = True,
-    transform = transforms.ToTensor()
+    transform = test_transform
 )
 
 # Creating data loaders
