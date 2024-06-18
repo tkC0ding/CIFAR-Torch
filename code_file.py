@@ -65,10 +65,11 @@ class CNN(nn.Module):
         self.conv8 = nn.Conv2d(128, 128, 3, padding=1)
         self.Dense1 = nn.Linear(512, 128)
         self.Dense2 = nn.Linear(128, 64)
-        self.Dense3 = nn.Linear(64, 10)
+        self.Dense3 = nn.Linear(64, 16)
+        self.Dense4 = nn.Linear(16, 10)
 
         nn.ModuleList([self.relu, self.conv1, self.conv2, self.conv3, self.conv4, self.conv5, self.conv6, self.Dense1, self.Dense2,
-                       self.Dense3, self.dropout, self.flatten, self.pool, self.conv7, self.conv8])
+                       self.Dense3, self.dropout, self.flatten, self.pool, self.conv7, self.conv8, self.Dense4])
     
     def forward(self, x):
         x = self.conv1(x)
@@ -102,7 +103,9 @@ class CNN(nn.Module):
         x = self.relu(x)
         x = self.Dense2(x)
         x = self.relu(x)
-        out = self.Dense3(x)
+        x = self.Dense3(x)
+        x = self.relu(x)
+        out = self.Dense4(x)
         return(out)
 
 model = CNN().to(device)
