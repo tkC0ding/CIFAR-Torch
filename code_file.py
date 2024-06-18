@@ -61,19 +61,20 @@ class CNN(nn.Module):
         self.conv4 = nn.Conv2d(32, 32, 5, padding=2)
         self.conv5 = nn.Conv2d(32, 64, 3, padding=1)
         self.conv6 = nn.Conv2d(64, 64, 3, padding=1)
-        self.Dense1 = nn.Linear(1024, 4096)
-        self.Dense2 = nn.Linear(4096, 4096)
-        self.Dense3 = nn.Linear(4096, 10)
+        self.conv7 = nn.Conv2d(64, 128, 3, padding=1)
+        self.conv8 = nn.Conv2d(128, 128, 3, padding=1)
+        self.Dense1 = nn.Linear(512, 128)
+        self.Dense2 = nn.Linear(128, 64)
+        self.Dense3 = nn.Linear(64, 10)
 
         nn.ModuleList([self.relu, self.conv1, self.conv2, self.conv3, self.conv4, self.conv5, self.conv6, self.Dense1, self.Dense2,
-                       self.Dense3, self.dropout, self.flatten, self.pool])
+                       self.Dense3, self.dropout, self.flatten, self.pool, self.conv7, self.conv8])
     
     def forward(self, x):
         x = self.conv1(x)
         x = self.relu(x)
         x = self.conv2(x)
         x = self.relu(x)
-        x = self.dropout(x)
         x = self.pool(x)
 
         x = self.conv3(x)
@@ -87,13 +88,18 @@ class CNN(nn.Module):
         x = self.relu(x)
         x = self.conv6(x)
         x = self.relu(x)
+        x = self.pool(x)
+
+        x = self.conv7(x)
+        x = self.relu(x)
+        x = self.conv8(x)
+        x = self.relu(x)
         x = self.dropout(x)
         x = self.pool(x)
 
         x = self.flatten(x)
         x = self.Dense1(x)
         x = self.relu(x)
-        x = self.dropout(x)
         x = self.Dense2(x)
         x = self.relu(x)
         out = self.Dense3(x)
@@ -105,6 +111,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # train function
 def train(model, loss_fn, optimizer, dataloader):
+    num_samples = 0
+    num_correct = 0
     model.train()
     num_steps = len(dataloader)
     for epoch in range(num_epochs):
@@ -118,8 +126,13 @@ def train(model, loss_fn, optimizer, dataloader):
             loss.backward()
             optimizer.step()
 
+            _, pred = torch.max(y_pred, 1)
+            num_correct += (pred == y).sum().item()
+            num_samples += y.size(0)
+            acc = (num_correct/num_samples) * 100
+
             if (i + 1) % 250 == 0:
-                print(f"Epoch [ {epoch+1}/{num_epochs} ] Step [ {i+1}/{num_steps} ] Loss: {loss.item()}")
+                print(f"Epoch [ {epoch+1}/{num_epochs} ] Step [ {i+1}/{num_steps} ] Loss: {loss.item()} Accuracy:{acc}")
     print("Training Finished!")
 
 
