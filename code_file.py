@@ -4,10 +4,9 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 import torchvision.transforms as transforms
 
-batch_size = 64
+batch_size = 100
 learning_rate = 0.001
-momentum = 0.9
-num_epochs = 15
+num_epochs = 20
 
 # Choose device
 device = torch.device(
@@ -19,13 +18,15 @@ device = torch.device(
 
 #Data Transforms
 train_transform = transforms.Compose([
+    transforms.Grayscale(),
     transforms.ToTensor(),
-    transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+    transforms.Normalize([0.5], [0.5])
 ])
 
 test_transform = transforms.Compose([
+    transforms.Grayscale(),
     transforms.ToTensor(),
-    transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+    transforms.Normalize([0.5], [0.5])
 ])
 
 # Downloading datasets
@@ -47,13 +48,13 @@ test_dataset = datasets.CIFAR10(
 train_loader = DataLoader(dataset = train_dataset, batch_size = batch_size, shuffle = True)
 test_loader = DataLoader(dataset = test_dataset, batch_size = batch_size, shuffle = False)
 
-class CNN:
+class CNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.relu = nn.LeakyReLU()
-        self.conv1 = nn.Conv2d(3, 16, 5, padding=2)
+        self.relu = nn.PReLU(device=device)
+        self.conv1 = nn.Conv2d(1, 16, 5, padding=2)
         self.pool = nn.MaxPool2d(2, 2)
-        self.dropout = nn.Dropout2d(0.5)
+        self.dropout = nn.Dropout(0.3)
         self.flatten = nn.Flatten()
         self.conv2 = nn.Conv2d(16, 16, 5, padding=2)
         self.conv3 = nn.Conv2d(16, 32, 5, padding=2)
@@ -70,7 +71,6 @@ class CNN:
     def forward(self, x):
         x = self.conv1(x)
         x = self.relu(x)
-        x = self.dropout(x)
         x = self.conv2(x)
         x = self.relu(x)
         x = self.dropout(x)
@@ -78,7 +78,6 @@ class CNN:
 
         x = self.conv3(x)
         x = self.relu(x)
-        x = self.dropout(x)
         x = self.conv4(x)
         x = self.relu(x)
         x = self.dropout(x)
@@ -86,7 +85,6 @@ class CNN:
 
         x = self.conv5(x)
         x = self.relu(x)
-        x = self.dropout(x)
         x = self.conv6(x)
         x = self.relu(x)
         x = self.dropout(x)
@@ -95,6 +93,7 @@ class CNN:
         x = self.flatten(x)
         x = self.Dense1(x)
         x = self.relu(x)
+        x = self.dropout(x)
         x = self.Dense2(x)
         x = self.relu(x)
         out = self.Dense3(x)
@@ -102,7 +101,7 @@ class CNN:
 
 model = CNN().to(device)
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # train function
 def train(model, loss_fn, optimizer, dataloader):
@@ -119,7 +118,7 @@ def train(model, loss_fn, optimizer, dataloader):
             loss.backward()
             optimizer.step()
 
-            if (i + 1) % 200 == 0:
+            if (i + 1) % 250 == 0:
                 print(f"Epoch [ {epoch+1}/{num_epochs} ] Step [ {i+1}/{num_steps} ] Loss: {loss.item()}")
     print("Training Finished!")
 
