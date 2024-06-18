@@ -8,6 +8,9 @@ batch_size = 100
 learning_rate = 0.001
 num_epochs = 20
 
+#define classes
+classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
 # Choose device
 device = torch.device(
     "cuda"
@@ -51,16 +54,16 @@ test_loader = DataLoader(dataset = test_dataset, batch_size = batch_size, shuffl
 class CNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.relu = nn.PReLU(device=device)
+        self.relu = nn.PReLU()
         self.conv1 = nn.Conv2d(1, 16, 5, padding=2)
         self.pool = nn.MaxPool2d(2, 2)
         self.dropout = nn.Dropout(0.3)
         self.flatten = nn.Flatten()
         self.conv2 = nn.Conv2d(16, 16, 5, padding=2)
-        self.conv3 = nn.Conv2d(16, 32, 5, padding=2)
-        self.conv4 = nn.Conv2d(32, 32, 5, padding=2)
-        self.conv5 = nn.Conv2d(32, 64, 3, padding=1)
-        self.conv6 = nn.Conv2d(64, 64, 3, padding=1)
+        self.conv3 = nn.Conv2d(16, 32, 3, padding=1)
+        self.conv4 = nn.Conv2d(32, 32, 3, padding=1)
+        self.conv5 = nn.Conv2d(32, 64, 5, padding=2)
+        self.conv6 = nn.Conv2d(64, 64, 5, padding=2)
         self.conv7 = nn.Conv2d(64, 128, 3, padding=1)
         self.conv8 = nn.Conv2d(128, 128, 3, padding=1)
         self.Dense1 = nn.Linear(512, 128)
