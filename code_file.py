@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 
 batch_size = 100
 learning_rate = 0.001
-num_epochs = 20
+num_epochs = 50
 
 #define classes
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -21,6 +21,10 @@ device = torch.device(
 
 #Data Transforms
 train_transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomVerticalFlip(),
+    transforms.RandomInvert(),
+    transforms.RandomRotation(10),
     transforms.Grayscale(),
     transforms.ToTensor(),
     transforms.Normalize([0.5], [0.5])
