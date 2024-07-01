@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 
 batch_size = 100
 learning_rate = 0.001
-num_epochs = 100
+num_epochs = 200
 
 #define classes
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
